@@ -1,0 +1,31 @@
+name: 'Apply latest team config via Fleet'
+description: 'Applies the latest team configuration profiles to Fleet'
+
+inputs:
+  FLEET_API_TOKEN:
+    description: 'Fleet API Token'
+    required: true
+  FLEET_URL:
+    description: 'Fleet URL'
+    required: true
+  TEAM_DIRECTORY:
+    description: 'Directory in repo where team configuration files are stored'
+    required: true
+    default: 'team_configs'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install fleetctl
+      run: npm install -g fleetctl
+      shell: bash
+
+    - name: Configure fleetctl
+      run: fleetctl config set --address ${{ inputs.FLEET_URL }} --token ${{ inputs.FLEET_API_TOKEN }}
+      shell: bash
+
+    - name: apply teams
+      run: |
+        cat {{ inputs.TEAM_DIRECTORY }}/*.yml > teams.yml
+        fleetctl apply -f teams.yml
+      shell: bash
